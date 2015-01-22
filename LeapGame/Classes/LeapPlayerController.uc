@@ -149,14 +149,16 @@ ignores SeePlayer, HearNoise, Bump;
 }
 
 //zur Umwandlung der LeapMotion-Koordinaten in Lokale UDK-Koordinaten
-function vector WorldToLocalVector( float X, float Y, float Z, float offset, float Degree )
+function vector WorldToLocalVector( vector OldPosition, float offset, float Degree )
 {
-    local vector newVector;
-    newVector.x =  ((X + offset)*cos(Degree)) + (sin(Degree) * Y);
-    newVector.y = (Y*cos(Degree)) - (sin(Degree) * (X + offset));
-    newVector.z = Z - 150;
+    local vector newPosition;
+    MyLocation = Pawn.Location;
+    newPosition.x =  ((OldPosition.X + offset)*cos(Degree)) + (sin(Degree) * OldPosition.Y);
+    newPosition.y = (OldPosition.Y*cos(Degree)) - (sin(Degree) * (OldPosition.X + offset));
+    newPosition.z = OldPosition.Z - 150;
     
-    return newVector;
+    newPosition += MyLocation;
+    return newPosition;
 }
 
 simulated event PlayerTick( float DeltaTime )
@@ -174,12 +176,12 @@ local rotator palmRotation;
 local vector tipPosition;
 local rotator tipRotation;
 
-local vector newPosition;
 local rotator currentRotation;
 local float currentRotationDegree;
 
-local float offset;
+local vector fingerPosition;
 
+local float offset;
 
 super.PlayerTick(DeltaTime);
 
@@ -187,6 +189,7 @@ super.PlayerTick(DeltaTime);
     
     MyLocation = Pawn.Location;
     
+    //Die Rotation als Grad mit einem Wert zwischen 0-360 
     currentRotation = (Pawn.Rotation * UnrRotToDeg)*-1;
     currentRotation.Yaw = currentRotation.Yaw % 360;
     
@@ -215,13 +218,10 @@ if (LeapUDK.isLeapMotionConnected())
 
         // Use here information abouts hands to do something
         
-        
         //die x,y-Koordinaten des LeapMotion-Controllers müssen an das Koordinatensystem von UDK in Abhängigkeit vom Winkel des Spielers neu berechnet werden.
         currentRotationDegree = currentRotation.Yaw * RadianToDegree;
-       
-       newPosition = MyLocation + WorldToLocalVector( palmPosition.x, palmPosition.y, palmPosition.z, offset, currentRotationDegree );
         
-       leapActor.setLocation( newPosition );
+       leapActor.setLocation( WorldToLocalVector( palmPosition, offset, currentRotationDegree ) );
         
     }
     
@@ -242,8 +242,14 @@ if (LeapUDK.isLeapMotionConnected())
         rotateLeft = false;  
     }
     
-    //Wenn keine Finger erkannt werden, also eine Faust gemacht wird und diese sich weiter vorne/hinten befindet, bewegt man sich nach vorne/hinten
+    //Wenn keine Finger erkannt werden, also eine Faust gemacht wird und diese sich weiter vorne/hinten/links/rechts befindet, bewegt man sich nach vorne/hinten/rechts/links
     if(nbFingers == 0) {
+        
+        leapFinger1.setHidden(true); 
+        leapFinger2.setHidden(true); 
+        leapFinger3.setHidden(true); 
+        leapFinger4.setHidden(true); 
+        leapFinger5.setHidden(true); 
     
         if(palmPosition.x > 80 )
         {
@@ -282,6 +288,11 @@ if (LeapUDK.isLeapMotionConnected())
         moveBackward = false; 
         moveRight = false;
         moveLeft = false;
+        leapFinger1.setHidden(false); 
+        leapFinger2.setHidden(false); 
+        leapFinger3.setHidden(false); 
+        leapFinger4.setHidden(false); 
+        leapFinger5.setHidden(false);
     }
         
         
@@ -291,30 +302,31 @@ if (LeapUDK.isLeapMotionConnected())
            LeapUDK.getFingerInfo(handId, iFinger, fingerId, tipPosition, tipRotation);
            
            // Use here information abouts fingers to do something
+           fingerPosition = WorldToLocalVector( tipPosition, offset, currentRotationDegree );
            
            if (iFinger == 0)
            {
-                leapFinger1.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree ));
+               leapFinger1.setLocation( fingerPosition );
            } 
             
             if(iFinger == 1)
             {
-              leapFinger2.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
+                leapFinger2.setLocation( fingerPosition ); 
             } 
             
             if(iFinger == 2)
             {
-               leapFinger3.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree ));  
+               leapFinger3.setLocation( fingerPosition );  
             } 
             
             if(iFinger == 3)
             {
-                leapFinger4.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
+                leapFinger4.setLocation( fingerPosition ); 
             }
             
             if(iFinger == 4)
             {
-                leapFinger5.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
+                leapFinger5.setLocation( fingerPosition ); 
             } 
         }
     }
