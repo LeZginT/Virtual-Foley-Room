@@ -160,18 +160,12 @@ super.PlayerTick(DeltaTime);
     MyLocation = Pawn.Location;
     
     leapMotionActor.setLocation(MyLocation - vect(0,0,80));
-    //leapActor.setLocation(MyLocation + vect(100,0,-80));
     
     currentRotation = (Pawn.Rotation * UnrRotToDeg)*-1;
     currentRotation.Yaw = currentRotation.Yaw % 360;
-    //ClientMessage("aktueller Winkel (Degree):"$ currentRotation.Yaw $ " Grad.");
-    //ClientMessage("aktueller Cos:"$ cos(currentRotation.Yaw * 0.01745329252));
-    //ClientMessage("aktueller Sin:"$ sin(currentRotation.Yaw * 0.01745329252));
     
     //leapMoviePlayer.MyFunction("selectClicked");
     
-    //leapMotionActor.setRotation(Pawn.Rotation);
-    //leapActor.setRotation(Pawn.Rotation);
 
 // Be sure that the leap motion is present and ready
 if (LeapUDK.isLeapMotionConnected())
@@ -194,23 +188,17 @@ if (LeapUDK.isLeapMotionConnected())
         //die x,y-Koordinaten des LeapMotion-Controllers müssen an das Koordinatensystem von UDK in Abhängigkeit vom Winkel des Spielers neu berechnet werden.
         currentRotationDegree = currentRotation.Yaw * 0.01745329252;
         handPosition.x =  ((palmPosition.x + offset)*cos(currentRotationDegree)) + (sin(currentRotationDegree) * palmPosition.y);
-        //handPosition.x = palmPosition.x;
+        
         handPosition.y = (palmPosition.y*cos(currentRotationDegree)) - (sin(currentRotationDegree) * (palmPosition.x + offset));
-        //handPosition.y = palmPosition.y;
+        
         
        //Anpassung der z-Koordinaten, ansonsten zu großer Ausschwung nach oben/unten
         handPosition.z = palmPosition.z-150;
         
         newPosition = MyLocation + handPosition;
         
-        //if(iHand == 0) {
              leapMotionActor.setLocation( newPosition );
-         //}
-        
-         //if(iHand == 1) {
-             //leapActor.setLocation( newPosition );       
-         //}
-   }
+    }
     
     nbFingers = LeapUDK.getNbFingers(handId);
     
@@ -221,7 +209,6 @@ if (LeapUDK.isLeapMotionConnected())
     }
     else if(nbFingers == 2)
     {
-        //CallMyActionScriptFunc("selectClicked");
         rotateRight = true;
         rotateLeft = false;
     }

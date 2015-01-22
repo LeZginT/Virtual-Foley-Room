@@ -37,8 +37,7 @@ event PlayerController Login(string Portal, string Options, const UniqueNetID Un
 
 defaultproperties
 {
-PlayerControllerClass=class'LeapPlayerController'
-DefaultPawnClass=class 'LeapGame.LeapPawn'
-
-bDelayedStart=false
+    PlayerControllerClass=class'LeapPlayerController'
+    DefaultPawnClass=class 'LeapGame.LeapPawn'
+    bDelayedStart=false
 }
