@@ -3,16 +3,25 @@ class LeapPlayerController extends PlayerController;
 var LeapUDK LeapUDK;
 var Vector MyLocation;
 var LeapMotionActor leapMotionActor;
-//var LeapActor leapActor;
+var LeapFinger leapFinger1;
+var LeapFinger leapFinger2;
+var LeapFinger leapFinger3;
+var LeapFinger leapFinger4;
+var LeapFinger leapFinger5;
+
 var Vector StartVector;
 var LeapMoviePlayer leapMoviePlayer;
 
 //boolean, um zu ermitteln, ob man sich per Geste nach vorn bewegen soll oder nicht
 var bool moveForward;
+var bool moveBackward;
 
 //für links/rechts-Rotation
 var bool rotateLeft;
 var bool rotateRight;
+
+var bool moveLeft;
+var bool moveRight;
 
 //zur Anpassung der links/rechts/vorne/hinten-Bewegung
 var float RadianToDegree;
@@ -27,12 +36,12 @@ simulated event PostBeginPlay()
     leapMoviePlayer = new class'LeapMoviePlayer';
     
     leapMotionActor = Spawn(class'LeapMotionActor');  
-    //leapActor = Spawn(class 'LeapActor');
+    leapFinger1 = Spawn(class 'LeapFinger');
+    leapFinger2 = Spawn(class 'LeapFinger');
+    leapFinger3 = Spawn(class 'LeapFinger');
+    leapFinger4 = Spawn(class 'LeapFinger');
     
-    leapMotionActor.setLocation(vect(1115.77,-1351.05,2));
-    //leapActor.setLocation(vect(1215.77,-1351.05,2));
-    
-    leapMoviePlayer.MyFunction("selectClicked");
+    //leapMoviePlayer.MyFunction("selectClicked");
 }
 
 // Called at RestartPlayer by GameType
@@ -73,6 +82,18 @@ ignores SeePlayer, HearNoise, Bump;
             {
                 NewAccel = 1.0*X;
             }
+            else if(moveBackward)
+            {
+                NewAccel = -1.0*X;    
+            }
+            
+            else if(moveLeft) {
+                NewAccel = -1.0*Y;       
+            }
+            else if(moveRight)
+            {
+                NewAccel = 1.0*Y;   
+            }
             else {
                 NewAccel = PlayerInput.aForward*X + PlayerInput.aStrafe*Y;             
             }
@@ -90,8 +111,6 @@ ignores SeePlayer, HearNoise, Bump;
             // Update rotation.
             OldRotation = Rotation;
             
-            //Bei einem Finger: Rotation nach links
-            //Bei zwei Fingern: Rotation nach rechts
             if(rotateLeft)
             {
                 OldRotation.Yaw -= 400;
@@ -128,6 +147,16 @@ ignores SeePlayer, HearNoise, Bump;
     }
 }
 
+//zur Umwandlung der LeapMotion-Koordinaten in Lokale UDK-Koordinaten
+function vector WorldToLocalVector( float X, float Y, float Z, float offset, float Degree )
+{
+    local vector newVector;
+    newVector.x =  ((X + offset)*cos(Degree)) + (sin(Degree) * Y);
+    newVector.y = (Y*cos(Degree)) - (sin(Degree) * (X + offset));
+    newVector.z = Z - 150;
+    
+    return newVector;
+}
 
 simulated event PlayerTick( float DeltaTime )
 {
@@ -144,8 +173,6 @@ local rotator palmRotation;
 local vector tipPosition;
 local rotator tipRotation;
 
-//zur Anpassung der z Koordinate, die ansonten zu groß wird
-local vector handPosition;
 local vector newPosition;
 local rotator currentRotation;
 local float currentRotationDegree;
@@ -159,13 +186,15 @@ super.PlayerTick(DeltaTime);
     
     MyLocation = Pawn.Location;
     
-    leapMotionActor.setLocation(MyLocation - vect(0,0,80));
-    
     currentRotation = (Pawn.Rotation * UnrRotToDeg)*-1;
     currentRotation.Yaw = currentRotation.Yaw % 360;
     
-    //leapMoviePlayer.MyFunction("selectClicked");
-    
+    leapMotionActor.setRotation(Pawn.Rotation);
+    leapFinger1.setRotation(Pawn.Rotation);
+    leapFinger2.setRotation(Pawn.Rotation);
+    leapFinger3.setRotation(Pawn.Rotation);
+    leapFinger4.setRotation(Pawn.Rotation);
+    leapFinger5.setRotation(Pawn.Rotation);
 
 // Be sure that the leap motion is present and ready
 if (LeapUDK.isLeapMotionConnected())
@@ -185,29 +214,25 @@ if (LeapUDK.isLeapMotionConnected())
 
         // Use here information abouts hands to do something
         
+        
         //die x,y-Koordinaten des LeapMotion-Controllers müssen an das Koordinatensystem von UDK in Abhängigkeit vom Winkel des Spielers neu berechnet werden.
-        currentRotationDegree = currentRotation.Yaw * 0.01745329252;
-        handPosition.x =  ((palmPosition.x + offset)*cos(currentRotationDegree)) + (sin(currentRotationDegree) * palmPosition.y);
+        currentRotationDegree = currentRotation.Yaw * RadianToDegree;
+       
+       newPosition = MyLocation + WorldToLocalVector( palmPosition.x, palmPosition.y, palmPosition.z, offset, currentRotationDegree );
         
-        handPosition.y = (palmPosition.y*cos(currentRotationDegree)) - (sin(currentRotationDegree) * (palmPosition.x + offset));
+       leapMotionActor.setLocation( newPosition );
+       ClientMessage("New Position: " $ palmPosition);
         
-        
-       //Anpassung der z-Koordinaten, ansonsten zu großer Ausschwung nach oben/unten
-        handPosition.z = palmPosition.z-150;
-        
-        newPosition = MyLocation + handPosition;
-        
-             leapMotionActor.setLocation( newPosition );
     }
     
     nbFingers = LeapUDK.getNbFingers(handId);
     
-    if (nbFingers == 1 )
+    if ( palmPosition.y < -180 && nbFingers > 0)
     {
         rotateLeft = true;
         rotateRight = false;
     }
-    else if(nbFingers == 2)
+    else if(palmPosition.y > 180  && nbFingers > 0)
     {
         rotateRight = true;
         rotateLeft = false;
@@ -217,23 +242,81 @@ if (LeapUDK.isLeapMotionConnected())
         rotateLeft = false;  
     }
     
-    //Wenn keine Finger erkannt werden, also eine Faust gemacht wird, bewegt man sich nach vorne
-    if(nbFingers == 0 && nbHands > 0)
+    //Wenn keine Finger erkannt werden, also eine Faust gemacht wird und diese sich weiter vorne/hinten befindet, bewegt man sich nach vorne/hinten
+    if(nbFingers == 0) {
+    
+        if(palmPosition.x > 80 )
         {
-            moveForward = true; 
+            moveForward = true;
+            moveBackward = false; 
         } 
+        else if( palmPosition.x < -160 )
+        {
+            moveBackward = true;
+            moveForward = false;
+        }
         else
         {
             moveForward = false;
+            moveBackward = false;  
         }
+        
+        if ( palmPosition.y < -180 )
+        {
+            moveLeft = true;
+            moveRight = false;
+        }
+        else if(palmPosition.y > 180 )
+        {
+            moveRight = true;
+            moveLeft = false;
+        }
+        else {
+            moveRight = false;
+            moveLeft = false;  
+        }
+    
+    }
+    else {
+        moveForward = false;
+        moveBackward = false; 
+        moveRight = false;
+        moveLeft = false;
+    }
+        
         
     for (iFinger = 0; iFinger < nbFingers; iFinger++)
         {
            // Get the fingers informations
            LeapUDK.getFingerInfo(handId, iFinger, fingerId, tipPosition, tipRotation);
-        
+           
            // Use here information abouts fingers to do something
            
+           if (iFinger == 0)
+           {
+                leapFinger1.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree ));
+           }
+            
+            if(iFinger == 1)
+            {
+              leapFinger2.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
+            }
+            
+            if(iFinger == 2)
+            {
+               leapFinger3.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree ));  
+            }
+            
+            if(iFinger == 3)
+            {
+                leapFinger4.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
+            }
+            
+            if(iFinger == 4)
+            {
+                leapFinger5.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
+                
+            }
        }
     }
 }
@@ -241,4 +324,5 @@ if (LeapUDK.isLeapMotionConnected())
 defaultproperties
 {
     CameraClass=class 'LeapGame.LeapCamera'
+    RadianToDegree = 0.01745329252
 }
