@@ -22,7 +22,6 @@ defaultProperties
     bNoEncroachCheck= true
    
     Physics=PHYS_Projectile
-    bStatic=False
-    bMovable=True
-    
+    bStatic=false
+    bMovable=true
 }

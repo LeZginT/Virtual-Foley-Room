@@ -40,6 +40,7 @@ simulated event PostBeginPlay()
     leapFinger2 = Spawn(class 'LeapFinger');
     leapFinger3 = Spawn(class 'LeapFinger');
     leapFinger4 = Spawn(class 'LeapFinger');
+    leapFinger5 = Spawn(class 'LeapFinger');
     
     //leapMoviePlayer.MyFunction("selectClicked");
 }
@@ -113,11 +114,11 @@ ignores SeePlayer, HearNoise, Bump;
             
             if(rotateLeft)
             {
-                OldRotation.Yaw -= 400;
+                OldRotation.Yaw -= 200;
             } 
             else if (rotateRight)
             {
-                OldRotation.Yaw += 400;   
+                OldRotation.Yaw += 200;   
             }
             SetRotation(OldRotation);
             
@@ -250,7 +251,7 @@ if (LeapUDK.isLeapMotionConnected())
             moveForward = true;
             moveBackward = false; 
         } 
-        else if( palmPosition.x < -160 )
+        else if( palmPosition.x < -90 )
         {
             moveBackward = true;
             moveForward = false;
@@ -261,12 +262,12 @@ if (LeapUDK.isLeapMotionConnected())
             moveBackward = false;  
         }
         
-        if ( palmPosition.y < -180 )
+        if ( palmPosition.y < -120 )
         {
             moveLeft = true;
             moveRight = false;
         }
-        else if(palmPosition.y > 180 )
+        else if(palmPosition.y > 120 )
         {
             moveRight = true;
             moveLeft = false;
@@ -295,17 +296,17 @@ if (LeapUDK.isLeapMotionConnected())
            if (iFinger == 0)
            {
                 leapFinger1.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree ));
-           }
+           } 
             
             if(iFinger == 1)
             {
               leapFinger2.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
-            }
+            } 
             
             if(iFinger == 2)
             {
                leapFinger3.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree ));  
-            }
+            } 
             
             if(iFinger == 3)
             {
@@ -315,9 +316,8 @@ if (LeapUDK.isLeapMotionConnected())
             if(iFinger == 4)
             {
                 leapFinger5.setLocation( MyLocation + WorldToLocalVector( tipPosition.x, tipPosition.y, tipPosition.z, offset, currentRotationDegree )); 
-                
-            }
-       }
+            } 
+        }
     }
 }
 
