@@ -5,6 +5,7 @@ var Vector MyLocation;
 var LeapMotionActor leapMotionActor;
 //var LeapActor leapActor;
 var Vector StartVector;
+var LeapMoviePlayer leapMoviePlayer;
 
 //boolean, um zu ermitteln, ob man sich per Geste nach vorn bewegen soll oder nicht
 var bool moveForward;
@@ -23,18 +24,21 @@ simulated event PostBeginPlay()
     LeapUDK = new class'LeapUDK';
     LeapUDK.initLeapMotion();
     
+    leapMoviePlayer = new class'LeapMoviePlayer';
+    
     leapMotionActor = Spawn(class'LeapMotionActor');  
     //leapActor = Spawn(class 'LeapActor');
     
     leapMotionActor.setLocation(vect(1115.77,-1351.05,2));
     //leapActor.setLocation(vect(1215.77,-1351.05,2));
+    
+    leapMoviePlayer.MyFunction("selectClicked");
 }
 
 // Called at RestartPlayer by GameType
 public function rSetCameraMode(name cameraSetting){
     SetCameraMode(cameraSetting);
 }
-
 
 simulated event PreBeginPlay()
 {
@@ -146,6 +150,8 @@ local vector newPosition;
 local rotator currentRotation;
 local float currentRotationDegree;
 
+local float offset;
+
 
 super.PlayerTick(DeltaTime);
 
@@ -161,6 +167,8 @@ super.PlayerTick(DeltaTime);
     //ClientMessage("aktueller Winkel (Degree):"$ currentRotation.Yaw $ " Grad.");
     //ClientMessage("aktueller Cos:"$ cos(currentRotation.Yaw * 0.01745329252));
     //ClientMessage("aktueller Sin:"$ sin(currentRotation.Yaw * 0.01745329252));
+    
+    //leapMoviePlayer.MyFunction("selectClicked");
     
     //leapMotionActor.setRotation(Pawn.Rotation);
     //leapActor.setRotation(Pawn.Rotation);
@@ -178,14 +186,16 @@ if (LeapUDK.isLeapMotionConnected())
     {
         // Get the hands informations
         LeapUDK.getHandInfo(iHand, handId, palmPosition, palmVelocity, palmRotation);
+        
+        offset = 400.0;
 
         // Use here information abouts hands to do something
         
         //die x,y-Koordinaten des LeapMotion-Controllers müssen an das Koordinatensystem von UDK in Abhängigkeit vom Winkel des Spielers neu berechnet werden.
         currentRotationDegree = currentRotation.Yaw * 0.01745329252;
-        handPosition.x =  (palmPosition.x*cos(currentRotationDegree)) + (sin(currentRotationDegree) * palmPosition.y);
+        handPosition.x =  ((palmPosition.x + offset)*cos(currentRotationDegree)) + (sin(currentRotationDegree) * palmPosition.y);
         //handPosition.x = palmPosition.x;
-        handPosition.y = (palmPosition.y*cos(currentRotationDegree)) - (sin(currentRotationDegree) * palmPosition.x);
+        handPosition.y = (palmPosition.y*cos(currentRotationDegree)) - (sin(currentRotationDegree) * (palmPosition.x + offset));
         //handPosition.y = palmPosition.y;
         
        //Anpassung der z-Koordinaten, ansonsten zu großer Ausschwung nach oben/unten
@@ -195,8 +205,6 @@ if (LeapUDK.isLeapMotionConnected())
         
         //if(iHand == 0) {
              leapMotionActor.setLocation( newPosition );
-             //wegen Collision Problemen nutzen wir die Collision des Pawns
-             Pawn.setLocation( newPosition );
          //}
         
          //if(iHand == 1) {
@@ -213,6 +221,7 @@ if (LeapUDK.isLeapMotionConnected())
     }
     else if(nbFingers == 2)
     {
+        //CallMyActionScriptFunc("selectClicked");
         rotateRight = true;
         rotateLeft = false;
     }

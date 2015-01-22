@@ -17,19 +17,19 @@ defaultProperties
         //StaticMesh=StaticMesh'HU_Deco_Statues.SM.Mesh.S_HU_Deco_Statues_SM_Statue03_01'
         //StaticMesh=StaticMesh'WP_ShockRifle.Mesh.S_Sphere_Good'
         Scale=0.1
-    LightEnvironMent=MyLightEnvironment
+        LightEnvironMent=MyLightEnvironment
     End Object
     Components.Add(LeapMotionMesh)
     
-    //CollisionComponent=LeapMotionMesh;
-    //bCollideWorld=true
-    //bCollideActors = true
-    //bBlockActors = true
-    //BlockRigidBody = true
+    CollisionComponent=LeapMotionMesh;
+    bCollideWorld=true
+    bCollideActors = true
+    bBlockActors = true
+    BlockRigidBody = true
+    bNoEncroachCheck= true
    
-   
-   Physics=PHYS_Projectile
-   bStatic=False
-   bMovable=True
+    Physics=PHYS_Projectile
+    bStatic=False
+    bMovable=True
     
 }

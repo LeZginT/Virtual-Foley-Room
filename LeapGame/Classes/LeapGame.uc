@@ -7,7 +7,7 @@ function RestartPlayer(Controller aPlayer)
 super.RestartPlayer(aPlayer);
 `Log("Player restarted");
 currentPlayer = LeapPlayerController(aPlayer);
-currentPlayer.rSetCameraMode('ThirdPerson');
+currentPlayer.rSetCameraMode('FirstPerson');
 }
 
 simulated event PostBeginPlay()

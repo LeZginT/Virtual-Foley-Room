@@ -20,6 +20,7 @@ defaultProperties
     
     CollisionComponent=LeapMesh;
    bCollideWorld=true
+   bCollideActors=true
    Physics=PHYS_Projectile
    bStatic=False
    bMovable=True
