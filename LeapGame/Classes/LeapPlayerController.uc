@@ -2,7 +2,7 @@ class LeapPlayerController extends PlayerController;
 
 var LeapUDK LeapUDK;
 var Vector MyLocation;
-var LeapMotionActor leapMotionActor;
+var LeapActor leapActor;
 var LeapFinger leapFinger1;
 var LeapFinger leapFinger2;
 var LeapFinger leapFinger3;
@@ -35,7 +35,7 @@ simulated event PostBeginPlay()
     
     leapMoviePlayer = new class'LeapMoviePlayer';
     
-    leapMotionActor = Spawn(class'LeapMotionActor');  
+    leapActor = Spawn(class'LeapActor');  
     leapFinger1 = Spawn(class 'LeapFinger');
     leapFinger2 = Spawn(class 'LeapFinger');
     leapFinger3 = Spawn(class 'LeapFinger');
@@ -190,7 +190,7 @@ super.PlayerTick(DeltaTime);
     currentRotation = (Pawn.Rotation * UnrRotToDeg)*-1;
     currentRotation.Yaw = currentRotation.Yaw % 360;
     
-    leapMotionActor.setRotation(Pawn.Rotation);
+    leapActor.setRotation(Pawn.Rotation);
     leapFinger1.setRotation(Pawn.Rotation);
     leapFinger2.setRotation(Pawn.Rotation);
     leapFinger3.setRotation(Pawn.Rotation);
@@ -221,19 +221,18 @@ if (LeapUDK.isLeapMotionConnected())
        
        newPosition = MyLocation + WorldToLocalVector( palmPosition.x, palmPosition.y, palmPosition.z, offset, currentRotationDegree );
         
-       leapMotionActor.setLocation( newPosition );
-       ClientMessage("New Position: " $ palmPosition);
+       leapActor.setLocation( newPosition );
         
     }
     
     nbFingers = LeapUDK.getNbFingers(handId);
     
-    if ( palmPosition.y < -180 && nbFingers > 0)
+    if ( palmPosition.y < -120 && nbFingers > 0)
     {
         rotateLeft = true;
         rotateRight = false;
     }
-    else if(palmPosition.y > 180  && nbFingers > 0)
+    else if(palmPosition.y > 120  && nbFingers > 0)
     {
         rotateRight = true;
         rotateLeft = false;
@@ -251,7 +250,7 @@ if (LeapUDK.isLeapMotionConnected())
             moveForward = true;
             moveBackward = false; 
         } 
-        else if( palmPosition.x < -90 )
+        else if( palmPosition.x < -80 )
         {
             moveBackward = true;
             moveForward = false;
