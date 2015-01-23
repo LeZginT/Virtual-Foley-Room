@@ -9,10 +9,10 @@ function bool Start (optional bool startPaused = false)
 }
 
 
-function MyFunction(string command)
+function callActionScript(string command)
 {
-    `log("hi");
-    ActionScriptVoid(command); 
+    `log(command);
+    ActionScriptVoid("leftClicked"); 
 }
 
 

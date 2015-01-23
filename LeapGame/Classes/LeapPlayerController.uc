@@ -42,7 +42,7 @@ simulated event PostBeginPlay()
     leapFinger4 = Spawn(class 'LeapFinger');
     leapFinger5 = Spawn(class 'LeapFinger');
     
-    //leapMoviePlayer.MyFunction("selectClicked");
+    leapMoviePlayer.callActionScript("selectClicked");
 }
 
 // Called at RestartPlayer by GameType
@@ -149,6 +149,7 @@ ignores SeePlayer, HearNoise, Bump;
 }
 
 //zur Umwandlung der LeapMotion-Koordinaten in Lokale UDK-Koordinaten
+//Die Z-Koordinate muss angepasst werden, da der Wert vom LeapMotion-Controller sonst zu groß ist.
 function vector WorldToLocalVector( vector OldPosition, float offset, float Degree )
 {
     local vector newPosition;
@@ -245,13 +246,14 @@ if (LeapUDK.isLeapMotionConnected())
     //Wenn keine Finger erkannt werden, also eine Faust gemacht wird und diese sich weiter vorne/hinten/links/rechts befindet, bewegt man sich nach vorne/hinten/rechts/links
     if(nbFingers == 0) {
         
+        //Wenn der LeapMotion-Controller keine Finger erkennt, zeige sie nicht an
         leapFinger1.setHidden(true); 
         leapFinger2.setHidden(true); 
         leapFinger3.setHidden(true); 
         leapFinger4.setHidden(true); 
         leapFinger5.setHidden(true); 
     
-        if(palmPosition.x > 80 )
+        if( palmPosition.x > 80 )
         {
             moveForward = true;
             moveBackward = false; 
@@ -281,7 +283,6 @@ if (LeapUDK.isLeapMotionConnected())
             moveRight = false;
             moveLeft = false;  
         }
-    
     }
     else {
         moveForward = false;
